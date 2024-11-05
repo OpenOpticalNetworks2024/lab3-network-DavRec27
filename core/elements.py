@@ -1,15 +1,15 @@
 import json
 
 class Signal_information(object):
-    def __init__(self):
-        pass
+    def __init__(self, signal_power=2.0):
+        self._signal_power = float(signal_power)
 
     @property
     def signal_power(self):
-        pass
+        return self._signal_power
 
-    def update_signal_power(self):
-        pass
+    def update_signal_power(self, increment):
+        self._signal_power += float(increment)
 
     @property
     def noise_power(self):
