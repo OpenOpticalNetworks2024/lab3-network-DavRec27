@@ -2,7 +2,7 @@ import json
 
 class Signal_information(object):
 
-    def __init__(self, signal_power=2.0, noise_power=0.0, latency=0):
+    def __init__(self, signal_power=1.0, noise_power=0.0, latency=0):
         self._signal_power = float(signal_power)
         self._noise_power = float(noise_power)
         self._latency = float(latency)
