@@ -1,8 +1,12 @@
 import json
 
 class Signal_information(object):
-    def __init__(self, signal_power=2.0):
+
+    def __init__(self, signal_power=2.0, noise_power=0.0, latency=0):
         self._signal_power = float(signal_power)
+        self._noise_power = float(noise_power)
+        self._latency = float(latency)
+        self.path =[]
 
     @property
     def signal_power(self):
@@ -13,36 +17,36 @@ class Signal_information(object):
 
     @property
     def noise_power(self):
-        pass
+        return self._noise_power
 
     @noise_power.setter
-    def noise_power(self):
-        pass
+    def noise_power(self, value):
+        self._noise_power = float(value)
 
-    def update_noise_power(self):
-        pass
+    def update_noise_power(self, increment):
+        self._noise_power += float(increment)
 
     @property
     def latency(self):
-        pass
+        return self._latency
 
     @latency.setter
-    def latency(self):
-        pass
+    def latency(self, value):
+        self._latency = float(value)
 
-    def update_latency(self):
-        pass
+    def update_latency(self, increment):
+        self._latency += float(increment)
 
     @property
     def path(self):
-        pass
+        return self._path
 
     @path.setter
-    def path(self):
-        pass
+    def path(self, path_new):
+        self._path = list(path_new)
 
-    def update_path(self):
-        pass
+    def update_path(self, label):
+        self._path.append(label)
 
 
 class Node(object):
