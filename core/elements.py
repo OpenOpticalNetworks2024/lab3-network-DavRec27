@@ -6,7 +6,7 @@ class Signal_information(object):
         self._signal_power = float(signal_power)
         self._noise_power = float(noise_power)
         self._latency = float(latency)
-        self.path =[]
+        self.path = []
 
     @property
     def signal_power(self):
