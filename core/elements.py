@@ -1,5 +1,6 @@
 import json
 
+
 class Signal_information(object):
 
     def __init__(self, signal_power=1.0, noise_power=0.0, latency=0):
@@ -50,31 +51,47 @@ class Signal_information(object):
 
 
 class Node(object):
-    def __init__(self):
-        pass
+    def __init__(self, node_specs):
+        self._label = node_specs.get('label', "")
+        self._position = node_specs.get('position', (0.0, 0.0))
+        self._connected_nodes = node_specs.get('connections', [])
+        self.successive = {}
+        self.signal_information = Signal_information
 
     @property
     def label(self):
-        pass
+        return self._label
 
     @property
     def position(self):
-        pass
+        return self._position
 
     @property
     def connected_nodes(self):
-        pass
+        return self._connected_nodes
 
     @property
     def successive(self):
-        pass
+        return self.successive
 
     @successive.setter
-    def successive(self):
-        pass
+    def successive(self, new_successive):
+        if isinstance(new_successive, dict):
+            self.successive.update(new_successive)
+        else:
+            raise ValueError("Node successive must be a dict")
 
     def propagate(self):
-        pass
+        if self.signal_information.path:
+            current_label = self.signal_information.path[-1]
+        else:
+            current_label = 'start'
+        self.signal_information.update_path(current_label)
+
+        if current_label in self.successive:
+            next_node = self.successive[current_label]
+            next_node.propagate()
+
 
 
 class Line(object):
