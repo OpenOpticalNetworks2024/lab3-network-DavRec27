@@ -87,6 +87,7 @@ class Node(object):
         else:
             current_label = 'start'
         self.signal_information.update_path(current_label)
+        #per push
 
         if current_label in self.successive:
             next_node = self.successive[current_label]
