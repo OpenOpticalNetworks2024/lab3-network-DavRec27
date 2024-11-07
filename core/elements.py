@@ -1,4 +1,5 @@
 import json
+from parameters import c
 
 
 class Signal_information(object):
@@ -56,7 +57,7 @@ class Node(object):
         self._position = node_specs.get('position', (0.0, 0.0))
         self._connected_nodes = node_specs.get('connections', [])
         self.successive = {}
-        self.signal_information = Signal_information
+        self.signal_information = Signal_information()
 
     @property
     def label(self):
@@ -87,55 +88,102 @@ class Node(object):
         else:
             current_label = 'start'
         self.signal_information.update_path(current_label)
-        #per push
 
         if current_label in self.successive:
             next_node = self.successive[current_label]
             next_node.propagate()
 
 
-
 class Line(object):
-    def __init__(self):
-        pass
+    def __init__(self, label, length):
+        self._label = label
+        self._length = float(length)
+        self.successive = {}
 
     @property
     def label(self):
-        pass
+        return self._label
 
     @property
     def length(self):
-        pass
+        return self.length
 
     @property
     def successive(self):
-        pass
+        return self.successive
 
     @successive.setter
-    def successive(self):
-        pass
+    def successive(self, new_succ):
+        if isinstance(new_succ, dict):
+            self.successive.update(new_succ)
+        else:
+            raise ValueError("Node successive must be a dict")
 
     def latency_generation(self):
-        pass
+        speed_in_fiber = 2/3 * c
+        latency = float(self._length / speed_in_fiber)
+        return latency
 
-    def noise_generation(self):
-        pass
+    def noise_generation(self, signal_power):
+        noise = float(1e-9 * signal_power * self._length)
+        return noise
 
-    def propagate(self):
-        pass
+    def propagate(self, signal_information):
+        noise_power = self.noise_generation(signal_information.signal_power)
+        signal_information.update_noise_power(noise_power)
+
+        latency = self.latency_generation()
+        signal_information.update_latency(latency)
+
+        for next_line in self.successive.values():
+            next_line.propagate(signal_information)
 
 
 class Network(object):
-    def __init__(self):
-        pass
+    def __init__(self, json_file = "nodes.json"):
+        with open(json_file, 'r') as f:
+            self.network_data = json.load(f)
+
+        self._nodes = {}
+        self._lines = {}
+
+# instances of all node and lines
+
+        for label, node_data in self.network_data.items():
+            node_specs ={
+                'label': label,
+                'position': node_data['position'],
+                'connections': node_data['connected_nodes']
+            }
+            node = Node(node_specs)
+            self._nodes[label] = node
+# lines
+            for connected_node_label in node_data['connected_nodes']:
+                # first direction A->B
+                line_label_1 = f"{label}-{connected_node_label}"
+                if line_label_1 not in self._lines:
+                    line_1 = Line(line_label_1, self._nodes[label], self._nodes[connected_node_label])
+                    self._lines[line_label_1] = line_1
+
+                    node.successive[line_label_1] = line_1
+                    self._nodes[connected_node_label].successive[line_label_1] = line_1
+                # opposite direction B->A
+                line_label_2 = f"{connected_node_label}-{label}"
+                if line_label_2 not in self.lines:
+                    line_2 = Line(line_label_2, self._nodes[label], self._nodes[connected_node_label])
+                    self._lines[line_label_2] = line_2
+
+                    node.successive[line_label_2] = line_2
+                    self._nodes[connected_node_label].successive[line_label_2] = line_2
+
 
     @property
     def nodes(self):
-        pass
+        return self._nodes
 
     @property
     def lines(self):
-        pass
+        return self._lines
 
     def draw(self):
         pass
