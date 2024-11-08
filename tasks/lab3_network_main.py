@@ -3,12 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from pathlib import Path
+from elements import Network
 
 # Exercise Lab3: Network
 
 ROOT = Path(__file__).parent.parent
 INPUT_FOLDER = ROOT / 'resources'
 file_input = INPUT_FOLDER / 'nodes.json'
+
+network = Network(json_file="nodes.json")
+# Step 2: Call the draw() method to visualize the network
+network.draw()
 
 
 # Load the Network from the JSON file, connect nodes and lines in Network.

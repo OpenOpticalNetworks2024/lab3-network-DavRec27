@@ -10,7 +10,7 @@ class Signal_information(object):
         self._signal_power = float(signal_power)
         self._noise_power = float(noise_power)
         self._latency = float(latency)
-        self.path = []
+        self._path = []
 
     @property
     def signal_power(self):
@@ -58,7 +58,7 @@ class Node(object):
         self._label = node_specs.get('label', "")
         self._position = node_specs.get('position', (0.0, 0.0))
         self._connected_nodes = node_specs.get('connections', [])
-        self.successive = {}
+        self._successive = {}
         self.signal_information = Signal_information()
 
     @property
@@ -75,12 +75,12 @@ class Node(object):
 
     @property
     def successive(self):
-        return self.successive
+        return self._successive
 
     @successive.setter
     def successive(self, new_successive):
         if isinstance(new_successive, dict):
-            self.successive.update(new_successive)
+            self._successive.update(new_successive)
         else:
             raise ValueError("Node successive must be a dict")
 
@@ -100,7 +100,7 @@ class Line(object):
     def __init__(self, label, length):
         self._label = label
         self._length = float(length)
-        self.successive = {}
+        self._successive = {}
 
     @property
     def label(self):
@@ -108,7 +108,7 @@ class Line(object):
 
     @property
     def length(self):
-        return self.length
+        return self._length
 
     @property
     def successive(self):
@@ -175,7 +175,7 @@ class Network(object):
                     self._lines[line_label_1] = Line(line_label_1, length)
                     node.successive[line_label_1] = self._lines[line_label_1]
 
-                if line_label_2 not in self.lines:
+                if line_label_2 not in self._lines:
                     self._lines[line_label_2] = Line(line_label_2, length)
                     self._nodes[connected_node_label].successive[line_label_2] = self._lines[line_label_2]
 
