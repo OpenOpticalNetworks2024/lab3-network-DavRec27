@@ -1,4 +1,6 @@
 import json
+import numpy as np
+import matplotlib.pyplot as plt
 from parameters import c
 
 
@@ -140,7 +142,7 @@ class Line(object):
 
 
 class Network(object):
-    def __init__(self, json_file = "nodes.json"):
+    def __init__(self, json_file="nodes.json"):
         with open(json_file, 'r') as f:
             self.network_data = json.load(f)
 
@@ -150,7 +152,7 @@ class Network(object):
 # instances of all node and lines
 
         for label, node_data in self.network_data.items():
-            node_specs ={
+            node_specs = {
                 'label': label,
                 'position': node_data['position'],
                 'connections': node_data['connected_nodes']
@@ -161,21 +163,21 @@ class Network(object):
             for connected_node_label in node_data['connected_nodes']:
                 # first direction A->B
                 line_label_1 = f"{label}-{connected_node_label}"
-                if line_label_1 not in self._lines:
-                    line_1 = Line(line_label_1, self._nodes[label], self._nodes[connected_node_label])
-                    self._lines[line_label_1] = line_1
-
-                    node.successive[line_label_1] = line_1
-                    self._nodes[connected_node_label].successive[line_label_1] = line_1
                 # opposite direction B->A
                 line_label_2 = f"{connected_node_label}-{label}"
+
+                # length computation
+                pos1 = np.array(node_data['position'])
+                pos2 = np.array(self.network_data[connected_node_label]['position'])
+                length = np.linalg.norm(pos2 - pos1)
+
+                if line_label_1 not in self._lines:
+                    self._lines[line_label_1] = Line(line_label_1, length)
+                    node.successive[line_label_1] = self._lines[line_label_1]
+
                 if line_label_2 not in self.lines:
-                    line_2 = Line(line_label_2, self._nodes[label], self._nodes[connected_node_label])
-                    self._lines[line_label_2] = line_2
-
-                    node.successive[line_label_2] = line_2
-                    self._nodes[connected_node_label].successive[line_label_2] = line_2
-
+                    self._lines[line_label_2] = Line(line_label_2, length)
+                    self._nodes[connected_node_label].successive[line_label_2] = self._lines[line_label_2]
 
     @property
     def nodes(self):
@@ -186,19 +188,85 @@ class Network(object):
         return self._lines
 
     def draw(self):
-        pass
+        plt.figure(figsize=(8, 8))
+
+        for label, node in self._nodes.items():
+            x, y = node.position
+            plt.scatter(x, y, label=label, color='red', s=100, zorder=5)
+            plt.text(x, y, label, fontsize=12, ha='right', color='black')
+
+            for line_label, line in node.successive.items():
+                connected_node = line.successive.get(line_label)
+                if connected_node:
+                    x1, y1 = node.position
+                    x2, y2 = connected_node.position
+                    plt.plot([x1, x2], [y1, y2], color='black', lw=2, zorder=1)
+
+        plt.title("Network Lab1")
+        plt.xlabel("X Position")
+        plt.ylabel("Y Position")
+        plt.grid(True)
+        plt.axis("equal")
+
+        plt.show()
 
     # find_paths: given two node labels, returns all paths that connect the 2 nodes
     # as a list of node labels. Admissible path only if cross any node at most once
     def find_paths(self, label1, label2):
-        pass
+        paths = []
+
+        def dfs(current_label, destination_label, path):  # depth-first search
+            path.append(current_label)
+
+            if current_label == destination_label:
+                paths.append(list(path))
+            else:
+                for line_label, line in self._nodes[current_label].successive.items():
+                    # Extract the next node's label from the line's successive nodes
+                    next_node_label = line_label.split('-')[1] if line_label.split('-')[0] == current_label else \
+                        line_label.split('-')[0]
+
+                    if next_node_label not in path:
+                        dfs(next_node_label, destination_label, path)
+
+            path.pop()
+        dfs(label1, label2, [])
+
+        return paths
 
     # connect function set the successive attributes of all NEs as dicts
     # each node must have dict of lines and viceversa
     def connect(self):
-        pass
+        for node_label, node in self._nodes.items():
+            for line_label, line in self._lines.items():
+                if line_label.startswith(f"{node_label}-"):
+                    node.successive[line_label] = line
+
+        for line_label, line in self._lines.items():
+            node1_label, node2_label = line_label.split('-')
+
+            line.successive = {
+                node1_label: self._nodes[node1_label],
+                node2_label: self._nodes[node2_label]
+            }
 
     # propagate signal_information through path specified in it
     # and returns the modified spectral information
     def propagate(self, signal_information):
-        pass
+        path = signal_information.path
+
+        for i in range(len(path) - 1):
+            current_label = path[i]
+            next_label = path[i + 1]
+
+            line_label = f"{current_label}-{next_label}"
+
+            line = self._lines.get(line_label)
+
+            if line:
+                signal_information.update_signal_power()
+                signal_information.update_noise_power(line.noise_generation)
+                signal_information.update_latency(line.latency_generation)
+
+            return signal_information
+
