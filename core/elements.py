@@ -54,10 +54,10 @@ class Signal_information(object):
 
 
 class Node(object):
-    def __init__(self, node_specs):
-        self._label = node_specs.get('label', "")
-        self._position = node_specs.get('position', (0.0, 0.0))
-        self._connected_nodes = node_specs.get('connections', [])
+    def __init__(self, input_dict):
+        self._label = input_dict.get('label', "")
+        self._position = input_dict.get('position', (0.0, 0.0))
+        self._connected_nodes = input_dict.get('connected_nodes', [])
         self._successive = {}
         self.signal_information = Signal_information()
 
@@ -112,14 +112,14 @@ class Line(object):
 
     @property
     def successive(self):
-        return self.successive
+        return self._successive
 
     @successive.setter
     def successive(self, new_succ):
         if isinstance(new_succ, dict):
-            self.successive.update(new_succ)
+            self._successive.update(new_succ)
         else:
-            raise ValueError("Node successive must be a dict")
+            raise ValueError("Node successive must be a dict of Nodes")
 
     def latency_generation(self):
         speed_in_fiber = 2/3 * c
@@ -265,8 +265,8 @@ class Network(object):
 
             if line:
                 signal_information.update_signal_power()
-                signal_information.update_noise_power(line.noise_generation)
-                signal_information.update_latency(line.latency_generation)
+                signal_information.update_noise_power(line.noise_generation(signal_information.signal_power))
+                signal_information.update_latency(line.latency_generation())
 
-            return signal_information
+        return signal_information
 
