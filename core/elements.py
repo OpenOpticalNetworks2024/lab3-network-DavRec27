@@ -1,7 +1,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-from parameters import c
+from core.parameters import c
 
 
 class Signal_information(object):
@@ -177,7 +177,7 @@ class Network(object):
 
                 if line_label_2 not in self._lines:
                     self._lines[line_label_2] = Line(line_label_2, length)
-                    self._nodes[connected_node_label].successive[line_label_2] = self._lines[line_label_2]
+                    node.successive[line_label_2] = self._lines[line_label_2]
 
     @property
     def nodes(self):
@@ -200,12 +200,13 @@ class Network(object):
                 if connected_node:
                     x1, y1 = node.position
                     x2, y2 = connected_node.position
-                    plt.plot([x1, x2], [y1, y2], color='black', lw=2, zorder=1)
+                    print(x1, y1)
+                    print(x2, y2)
+                    plt.plot([x1, x2], [y1, y2], color='blue', lw=100, zorder=1)
 
-        plt.title("Network Lab1")
+        plt.title("Network Lab3")
         plt.xlabel("X Position")
         plt.ylabel("Y Position")
-        plt.grid(True)
         plt.axis("equal")
 
         plt.show()
@@ -264,7 +265,7 @@ class Network(object):
             line = self._lines.get(line_label)
 
             if line:
-                signal_information.update_signal_power()
+                signal_information.update_signal_power(line.length)
                 signal_information.update_noise_power(line.noise_generation(signal_information.signal_power))
                 signal_information.update_latency(line.latency_generation())
 
