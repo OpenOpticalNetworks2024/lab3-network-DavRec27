@@ -15,7 +15,6 @@ file_input = INPUT_FOLDER / 'nodes.json'
 
 network = Network(json_file=str(file_input))
 
-# Connect nodes and lines in the Network
 network.connect()
 
 # Prepare lists to collect data for the DataFrame
@@ -28,21 +27,20 @@ snr_list = []
 for node1_label in network.nodes:
     for node2_label in network.nodes:
         if node1_label != node2_label:
-            # Find all paths between node1 and node2
             paths = network.find_paths(node1_label, node2_label)
 
-            # For each path, propagate the signal and collect metrics
+            # propagation and collection
             for path in paths:
-                # Initialize Signal_information with signal power of 1 mW (0.001 W)
+                # signal power = 1 mW
                 signal_info = Signal_information(signal_power=0.001)
 
-                # Set the path for signal propagation
+                # path assignation
                 signal_info.path = path
 
-                # Propagate signal through the network
+                # signal propagation
                 signal_info = network.propagate(signal_info)
 
-                # Calculate SNR in dB
+                # SNR
                 snr = 10 * np.log10(signal_info.signal_power / signal_info.noise_power)
 
                 # Convert path to string format "A->B->C..."
@@ -54,7 +52,7 @@ for node1_label in network.nodes:
                 noise_list.append(signal_info.noise_power)
                 snr_list.append(snr)
 
-# Create a DataFrame with the collected data
+# pandas dataframe
 df = pd.DataFrame({
     "Path": path_list,
     "Total Latency (s)": latency_list,

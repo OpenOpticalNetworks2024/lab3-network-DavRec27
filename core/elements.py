@@ -189,20 +189,25 @@ class Network(object):
 
     def draw(self):
         plt.figure(figsize=(8, 8))
+        ax = plt.gca()
+        ax.set_facecolor('black')
 
         for label, node in self._nodes.items():
             x, y = node.position
-            plt.scatter(x, y, label=label, color='red', s=100, zorder=5)
-            plt.text(x, y, label, fontsize=12, ha='right', color='black')
+            plt.scatter(x, y, label=label, color='white', s=100, zorder=5)
+            plt.text(x + 15000, y + 5000, label, fontsize=20, fontweight='bold', ha='center', color='white', zorder=6)
 
-            for line_label, line in node.successive.items():
-                connected_node = line.successive.get(line_label)
-                if connected_node:
-                    x1, y1 = node.position
-                    x2, y2 = connected_node.position
-                    print(x1, y1)
-                    print(x2, y2)
-                    plt.plot([x1, x2], [y1, y2], color='blue', lw=100, zorder=1)
+            for line_label in node.successive:
+                node_labels = line_label.split('-')
+                if len(node_labels) == 2:
+                    label1, label2 = node_labels
+                    connected_label = label2 if label1 == label else label1
+
+                    connected_node = self._nodes.get(connected_label)
+                    if connected_node:
+                        x1, y1 = node.position
+                        x2, y2 = connected_node.position
+                        plt.plot([x1, x2], [y1, y2], color='red', lw=2, zorder=1)
 
         plt.title("Network Lab3")
         plt.xlabel("X Position")
