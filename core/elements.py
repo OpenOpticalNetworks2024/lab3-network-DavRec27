@@ -270,7 +270,6 @@ class Network(object):
             line = self._lines.get(line_label)
 
             if line:
-                signal_information.update_signal_power(line.length)
                 signal_information.update_noise_power(line.noise_generation(signal_information.signal_power))
                 signal_information.update_latency(line.latency_generation())
 
